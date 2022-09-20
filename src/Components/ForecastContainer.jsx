@@ -8,19 +8,24 @@ import { WEATHER_URL } from "../constants";
 class ForecastContainer extends React.Component {
     state= {
         data: [],
+        location:[],
         // must include loading and error states and visual representations
         loading: false,
         error: false,
         unitType: 'imperial',
-        zip: 23320
+        zip:'23320',
     }
     // after component is rendered
-    async componentDidMount() {
+    componentDidMount() {
+       this.fetchData(); 
+    };
+    async fetchData() {
         // let loading before anything has been pulled
         this.setState({loading:true,})
         // try {this code} catch{any errors}
        try {
-        const response = await fetch(`${WEATHER_URL}${WEATHER_API}`);
+        const response = await fetch(`${WEATHER_URL}${WEATHER_API}&zip=${this.state.zip}`);
+        console.log(response)
         if (response.ok) {
             const json=  await response.json();
             const data = json.list
@@ -35,58 +40,70 @@ class ForecastContainer extends React.Component {
                         desc: item.weather[0].description,
                         wind: item.wind.speed,
                         windDir: item.wind.deg,
-
+                        
                     }));
-                    console.log(data)
+            const location = [json.city.name, json.city.country];
         this.setState({
             data,
             loading:false,
+            error:false,
+            location,
         });
         } else {
             this.setState({
                 error:true,
+                errorM:response.statusText,
                 loading:false,
             });
         }
        } catch(err) {
         console.error('There was an error, err');
        }
-    };
-
+    }
     updateForecastUnits = ({target:{value}}) => {
         this.setState({unitType: value})
     };
-       
+      
+    handleChange = (e) => {
+        this.setState({zip: e.target.value})
+    }
+    handleClick = () => {
+        this.fetchData();
+    }
     render() {
-        const {data, loading, error, unitType} = this.state
+        const {data, loading, error, errorM, unitType, location} = this.state
         return(
             <div className="container mt-5">
                 <h1 className="display-1 jumbotron bg-light py-5 mb-5">5-day Forecast</h1>
-                <h5 className="display-5 text-muted mb-5">Chesapeake VA, USA</h5>
+                <h5 className="display-5 text-muted mb-5">{location[0]}, {location[1]}</h5>
                 <div>
                     <input 
                         className='mb-3 rounded p-1 text-center' 
                         style={{width: '100px'}} 
                         type="text" 
                         placeholder='Zip Code'
-                        value={this.handelChange()}
+                        value={this.state.zip}
+                        onChange={this.handleChange}
+                        maxLength='5'
+
                     />
-                    <button className="rounded p-1">Go</button>
+                    <button className="rounded p-1" onClick={this.handleClick}>Go</button>
                 </div>
                 <DegreeToggle updateForecastUnits={this.updateForecastUnits}/>
                 <div className="row justify-content-center"> 
-                    { !loading ? data.map((item) => (
+                    { !loading && !error ? data.map((item) => (
                         <DayCard 
                             key={item.dt}
                             data={item} 
                             unitType={unitType}
-                        />
-                    )) : 
-                    <div class="spinner-border text-primary mt-5" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>}
+                        />)) 
+                    : error ? <h3 className="text-danger mt-5">Error : {errorM} ☹️</h3> 
+                    :<div className="spinner-border text-primary mt-5" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                    </div>
+                    }
                 </div>
-                {error && <h3 className="text-danger mt-5">Error loading data ☹️</h3>}
+                
                 
             </div>
 
