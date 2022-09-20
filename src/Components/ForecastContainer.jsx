@@ -73,9 +73,9 @@ class ForecastContainer extends React.Component {
     render() {
         const {data, loading, error, errorM, unitType, location} = this.state
         return(
-            <div className="container mt-5">
+            <div className="mainDiv container pt-5">
                 <h1 className="display-1 jumbotron bg-light py-5 mb-5">5-day Forecast</h1>
-                <h5 className="display-5 text-muted mb-5">{location[0]}, {location[1]}</h5>
+                <h5 className="display-5 text-muted mb-1">{location[0]}, {location[1]}</h5>
                 <div>
                     <input 
                         className='mb-3 rounded p-1 text-center' 
@@ -90,7 +90,7 @@ class ForecastContainer extends React.Component {
                     <button className="rounded p-1" onClick={this.handleClick}>Go</button>
                 </div>
                 <DegreeToggle updateForecastUnits={this.updateForecastUnits}/>
-                <div className="row justify-content-center"> 
+                <div className="row justify-content-center pb-5"> 
                     { !loading && !error ? data.map((item) => (
                         <DayCard 
                             key={item.dt}
